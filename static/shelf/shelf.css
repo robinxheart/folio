@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Shelf view - the Ashen Press scene (ThreeUI, MIT licence).
+   Ported from the canonical source's stylesheet into Folio. Every rule is
+   scoped under #shelf-root so it cannot reach the rest of the app, and the
+   authored page's fixed, full-viewport overlays run as absolute overlays
+   inside the frame. The scene's own palette, type, easing and motion are
+   exactly as authored; only the edits marked "Folio" are additions.
+   ========================================================================== */
+
+/* The scene's two families, bundled locally (SIL Open Font License).
+   Both ship as variable woff2 files, served from Folio's own fonts/. */
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/inter-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../fonts/eb-garamond-variable.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../fonts/eb-garamond-italic-variable.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* The scene's own tokens, namespaced so they never meet Folio's. */
+#shelf-root {
+  --sh-bg: #c6ae8e;
+  --sh-ink: #241a12;
+  --sh-ink-soft: rgba(36, 26, 18, .6);
+  --sh-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* The frame: Folio's 1px line and 10px panel radius around the authored
+   room. Its background is the scene's own wall colour, so the canvas and
+   the loader blend into one surface. */
+#shelf-root {
+  position: relative;
+  overflow: hidden;
+  margin-top: var(--s5);
+  height: clamp(380px, 62vh, 640px); /* Folio: the panel is a room, not a viewport */
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--sh-bg);
+  color: var(--sh-ink);
+  font-family: Inter, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#shelf-stage { position: absolute; inset: 0; }
+
+#shelf-root canvas#gl {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  opacity: 0; transition: opacity 1s linear;
+}
+#shelf-root canvas#gl.on { opacity: 1; }
+
+/* ---------- the opening: every element on its own beat ---------- */
+#shelf-root .rise { opacity: 0; transform: translateY(13px);
+  transition: opacity .74s var(--sh-ease) var(--d,0ms), transform .74s var(--sh-ease) var(--d,0ms); }
+#shelf-root .rise.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  #shelf-root .rise { transform: none; transition: opacity .3s linear var(--d,0ms); }
+}
+
+/* ---------- focused volume panel ---------- */
+#shelf-root .wash { position: absolute; left: 0; top: 0; z-index: 14; height: 100%;
+  width: min(664px, 62vw); pointer-events: none; display: block; }
+#shelf-root.mobile .wash { display: none; }
+#shelf-root .detail { position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 15;
+  width: min(560px, 50vw); padding: 92px 120px 92px 54px; opacity: 0; pointer-events: none;
+  transition: opacity .45s var(--sh-ease) .14s; }
+/* Folio: the panel is shorter than the authored viewport, so the copy
+   block breathes a little less on short screens. */
+@media (max-height: 760px) {
+  #shelf-root .detail { padding: 40px 90px 40px 44px; }
+}
+#shelf-root .detail .meta, #shelf-root .detail h2, #shelf-root .detail p,
+#shelf-root .detail .acts { max-width: 326px; }
+#shelf-root .detail.on { opacity: 1; }
+#shelf-root .detail .acts button { pointer-events: auto; }
+#shelf-root .detail .meta { font-size: 13px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--sh-ink-soft); margin: 0 0 13px; }
+#shelf-root .detail h2 { font-family: "EB Garamond", Georgia, serif; font-weight: 500;
+  font-size: 46px; line-height: 1.06; margin: 0 0 18px; letter-spacing: -.005em; }
+#shelf-root .detail p { font: 400 17px/1.62 Inter, sans-serif; margin: 0 0 32px; color: rgba(36,26,18,.84); }
+#shelf-root .detail .acts { display: flex; gap: 10px; }
+#shelf-root .detail .acts button {
+  font: 500 14.5px/1 Inter, sans-serif; color: var(--sh-ink); background: #fdf8ef; border: 0;
+  border-radius: 999px; padding: 15px 24px; cursor: pointer;
+  transition: transform .22s var(--sh-ease), box-shadow .22s var(--sh-ease), background .22s;
+  box-shadow: 0 1px 1px rgba(52,34,16,.18),
+              0 3px 6px rgba(52,34,16,.14),
+              0 10px 20px -6px rgba(52,34,16,.26),
+              0 26px 44px -18px rgba(52,34,16,.34),
+              inset 0 1px 0 rgba(255,255,255,.85);
+}
+#shelf-root .detail .acts button:hover { background: #fffcf5; transform: translateY(-2px);
+  box-shadow: 0 1px 1px rgba(52,34,16,.18),
+              0 5px 10px rgba(52,34,16,.16),
+              0 16px 28px -8px rgba(52,34,16,.28),
+              0 36px 60px -22px rgba(52,34,16,.38),
+              inset 0 1px 0 rgba(255,255,255,.9); }
+#shelf-root .detail .acts button:active { transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(52,34,16,.22), 0 4px 10px -2px rgba(52,34,16,.24),
+              inset 0 1px 0 rgba(255,255,255,.7); }
+
+#shelf-root .hint { position: absolute; z-index: 16; left: 0; top: 0; transform: translate(10px, 10px);
+  background: #fdf8ef; color: var(--sh-ink); border-radius: 999px; padding: 8px 13px;
+  font: 500 13.5px/1 Inter, sans-serif; box-shadow: 0 2px 14px rgba(50,35,20,.2);
+  pointer-events: none; opacity: 0; transition: opacity .5s; }
+#shelf-root .hint.on { opacity: 1; }
+
+/* ---------- catalogue rail ---------- */
+#shelf-root footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 15; padding: 30px 0 22px;
+  background: linear-gradient(to top, rgba(198,174,142,.94) 46%, rgba(198,174,142,.62) 76%, rgba(198,174,142,0));
+  border-top: 1px solid rgba(36,26,18,.16); opacity: 0; transition: opacity .7s var(--sh-ease) .34s; }
+#shelf-root footer.on { opacity: 1; }
+#shelf-root.reading footer { opacity: .3; }
+#shelf-root .tl { display: flex; justify-content: space-between; align-items: center;
+  gap: clamp(9px, 1.2vw, 22px); padding: 0 clamp(14px, 2.5vw, 44px);
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(90deg, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%); }
+#shelf-root .tl::-webkit-scrollbar { display: none; }
+#shelf-root .tl > * { flex: 0 1 auto; min-width: 0; }
+#shelf-root .tli { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font: inherit;
+  flex: 0 0 auto; display: flex; align-items: center; gap: 11px; }
+/* Folio: no stamp image — the group name and title carry the entry. */
+#shelf-root .tltxt { display: block; min-width: 0; white-space: nowrap; }
+#shelf-root .tli p { margin: 0; font-size: 12.5px; line-height: 1.24; color: var(--sh-ink-soft); transition: color .45s; }
+#shelf-root .tli p.studio { margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#shelf-root .tli h2 { margin: 0; font-size: 14px; font-weight: 400; line-height: 1.22; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; }
+#shelf-root .tli:hover p { color: var(--sh-ink); }
+
+/* ---------- mobile: the stack you flick through ---------- */
+#shelf-root .mbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 18; display: none;
+  align-items: flex-end; justify-content: space-between; gap: 12px; padding: 16px 16px 22px;
+  opacity: 0; transition: opacity .6s var(--sh-ease); }
+#shelf-root .mbar.on { opacity: 1; }
+#shelf-root .mbar-txt p { margin: 0 0 4px; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--sh-ink-soft); }
+#shelf-root .mbar-txt h2 { margin: 0; font-family: "EB Garamond", Georgia, serif; font-size: 24px; font-weight: 500; line-height: 1.12; }
+#shelf-root .mbar-acts { display: flex; gap: 8px; flex: 0 0 auto; }
+#shelf-root .mbar-acts button { font: 500 14.5px/1 Inter, sans-serif; border: 0; border-radius: 999px;
+  padding: 15px 21px;
+  box-shadow: 0 1px 1px rgba(52,34,16,.18), 0 4px 9px rgba(52,34,16,.16),
+              0 14px 26px -8px rgba(52,34,16,.30), inset 0 1px 0 rgba(255,255,255,.6); cursor: pointer; background: rgba(253,247,236,.9); color: var(--sh-ink); }
+#shelf-root .mbar-acts button.solid { background: var(--sh-ink); color: #f2ece1; }
+#shelf-root .menubtn { position: absolute; right: 14px; top: 10px; z-index: 22; width: 34px; height: 34px; border: 0;
+  background: none; display: none; flex-direction: column; justify-content: center; gap: 6px; cursor: pointer; }
+#shelf-root .menubtn span { display: block; height: 1.8px; background: var(--sh-ink); border-radius: 2px; }
+#shelf-root .menu { position: absolute; inset: 0; z-index: 21; background: rgba(206,186,157,.97); backdrop-filter: blur(14px);
+  padding: 66px 20px 24px; display: flex; flex-direction: column; overflow: auto; }
+#shelf-root .menu[hidden] { display: none; }
+#shelf-root .menu button { background: none; border: 0; text-align: left; padding: 13px 4px; cursor: pointer;
+  border-bottom: 1px solid rgba(36,26,18,.14); color: var(--sh-ink);
+  font-family: "EB Garamond", Georgia, serif; font-size: 21px; }
+#shelf-root .menu button span { display: block; margin-bottom: 4px; font-family: Inter, sans-serif; font-size: 12px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--sh-ink-soft); }
+
+#shelf-root.mobile footer { display: none; }
+#shelf-root.mobile .mbar { display: flex; padding-top: 52px;
+  background: linear-gradient(to top, rgba(198,174,142,.97) 34%, rgba(198,174,142,.72) 68%, rgba(198,174,142,0)); }
+#shelf-root.mobile .menubtn { display: flex; }
+#shelf-root.mobile .detail { display: none; }
+#shelf-root .mbar { background: linear-gradient(to top, rgba(203,182,152,.96), rgba(203,182,152,0)); }
+
+/* ---------- loader ---------- */
+#shelf-root .loader { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center;
+  background: var(--sh-bg); transition: opacity .6s linear; pointer-events: none; }
+#shelf-root .loader.gone { opacity: 0; }
+#shelf-root .bar { width: 92px; height: 2px; background: rgba(29,24,21,.2); position: relative; overflow: hidden; }
+#shelf-root .bar i { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--sh-ink);
+  transition: transform .3s linear; }
+/* Folio: the loader speaks. */
+#shelf-root .loader__txt { margin: 12px 0 0; font: 400 13px/1.4 Inter, sans-serif;
+  letter-spacing: .02em; color: var(--sh-ink-soft); }
+
+/* ---------- Folio additions: focus, keyboard highlight, calm motion ---------- */
+#shelf-root :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#shelf-root .tli.kbd .tltxt h2 { color: var(--sh-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  #shelf-root canvas#gl { transition: none; }
+  #shelf-root .detail, #shelf-root .hint, #shelf-root footer, #shelf-root .mbar,
+  #shelf-root .loader, #shelf-root .loader .bar i { transition-duration: 1ms; }
+}

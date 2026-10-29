@@ -1,0 +1,1073 @@
+/* ==========================================================================
+   Folio - PDF toolkit. Written in the order from DESIGN.md:
+   reset, tokens, base type, layout, components, states, dark overrides.
+   All selectors are single-class (BEM); no element-plus-class overrides.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Reset
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+button, input, dl, dd, dt, h1, h2, p { margin: 0; padding: 0; font: inherit; }
+
+button { background: none; border: 0; cursor: pointer; }
+
+img, canvas, svg { display: block; max-width: 100%; }
+
+[hidden] { display: none !important; }
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* --------------------------------------------------------------------------
+   2. Tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* colour */
+  --bg: #ECEEF2;
+  --surface: #FAFAFB;
+  --surface-2: #E2E5EB;
+  --line: #CDD2DB;
+  --ink: #181B22;
+  --ink-muted: #586071;
+  --accent: #2A44C4;
+  --accent-ink: #FFFFFF;
+  --ok: #1B7A4E;
+  --danger: #B3261E;
+  --paper: #FFFFFF;
+
+  /* type */
+  --font-head: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, "Segoe UI", sans-serif;
+
+  /* radii: pages 2, buttons and inputs 6, panels and drop zone 10 - nothing else */
+  --r-page: 2px;
+  --r-control: 6px;
+  --r-panel: 10px;
+
+  /* the one sheet shadow (pages only, both themes) - DESIGN.md exception */
+  --sheet-shadow: 0 1px 2px rgba(20, 24, 34, .14), 0 6px 14px rgba(20, 24, 34, .08); /* taste-skill-ignore: shadow */
+
+  /* spacing on a 4px base: 4, 8, 12, 16, 24, 32, 48 */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("./fonts/bricolage-grotesque-latin.woff2") format("woff2");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("./fonts/instrument-sans-latin.woff2") format("woff2");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
+   3. Base type
+   -------------------------------------------------------------------------- */
+
+body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* type scale: 0.8125, 0.9375, 1, 1.125, 1.5, 2.25 rem */
+
+.num { font-variant-numeric: tabular-nums; }
+
+.noscript { padding: 24px; color: var(--danger); }
+
+::selection { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+/* --------------------------------------------------------------------------
+   4. Layout
+   -------------------------------------------------------------------------- */
+
+.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  height: 56px;
+  padding: 0 var(--s5);
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+
+.topbar__brand {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.topbar__actions { margin-left: auto; display: flex; gap: var(--s2); }
+
+/* Folio: two views — the shelf home and the tool workbench. The left
+   rail is retired; the shelf itself is the navigation. */
+
+.view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+.view:focus { outline: none; }   /* focus lands here after navigating */
+
+/* Tool view top bar: wordmark, tool name, Shelf button, theme toggle. */
+
+a.topbar__brand { color: var(--ink); text-decoration: none; }
+
+.topbar__tool {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__home {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 40px;
+  padding: 0 var(--s3);
+  text-decoration: none;
+}
+
+.topbar__home .icon { width: 18px; height: 18px; flex: none; }
+
+@media (max-width: 559px) {
+  .topbar__tool { display: none; }   /* the panel title carries the name */
+}
+
+/* Protect: one view, two tabs (Lock / Unlock). */
+
+.tabs {
+  display: flex;
+  gap: var(--s2);
+  margin-top: var(--s5);
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  position: relative;
+  height: 44px;   /* Folio: touch target first; the underline keeps it quiet */
+  padding: 0 var(--s3);
+  color: var(--ink-muted);
+  border-radius: var(--r-control) var(--r-control) 0 0;
+}
+
+.tab:hover { color: var(--ink); }
+
+.tab.is-active { color: var(--ink); font-weight: 600; }
+
+.tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: var(--s2);
+  right: var(--s2);
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* Sub-panels (the Lock/Unlock pair inside Protect) step down one size so
+   the view reads as one page with tabs, not two stacked headings. */
+.wb__sub .wb__title { font-size: 1.5rem; }
+
+/* Workbench: fluid column, max 960px, left aligned - never centred. */
+
+.wb {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(960px + 96px);
+  padding: var(--s6) var(--s7) var(--s7);
+}
+
+.wb__title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.wb__help {
+  margin-top: var(--s2);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+  max-width: 66ch;
+}
+
+.dropzone, .filerow, .notice, .actionbar, .panel { position: relative; }
+
+.dropzone, .filerow, .notice { margin-top: var(--s5); }
+
+.progress { margin-top: var(--s3); }
+
+/* Tablet: the workbench tightens. */
+
+@media (max-width: 1099px) {
+  .wb { padding: var(--s5); }
+}
+
+/* Phone */
+
+@media (max-width: 699px) {
+  .wb { width: 100%; padding: var(--s5) var(--s4) var(--s6); }
+
+  .wb__title { font-size: 1.5rem; }
+}
+
+
+
+/* --------------------------------------------------------------------------
+   5. Components
+   -------------------------------------------------------------------------- */
+
+/* Icon button (theme toggle, file remove). */
+
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-control);
+  color: var(--ink-muted);
+}
+
+.iconbtn:hover { background: color-mix(in srgb, var(--ink) 5%, var(--bg)); color: var(--ink); }
+
+.icon { width: 18px; height: 18px; }
+
+.icon--sun { display: none; }
+
+html[data-theme="dark"] .icon--sun { display: block; }
+
+html[data-theme="dark"] .icon--moon { display: none; }
+
+/* Drop zone: dashed until a file lands, then it shrinks. */
+
+.dropzone {
+  border: 1px dashed var(--line);
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s4) var(--s5);
+  cursor: pointer;
+}
+
+.dropzone--compact { min-height: 44px; padding: 0 var(--s4); }
+
+.dropzone__input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.dropzone__text { color: var(--ink-muted); font-size: 0.9375rem; text-align: center; }
+
+.dropzone__link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  color: var(--ink);
+}
+
+.dropzone__link:hover { color: var(--ink); text-decoration-thickness: 2px; }
+
+.dropzone.is-over {
+  border-style: solid;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+/* File row (single-file tools). */
+
+.filerow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 56px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  padding: var(--s2) var(--s3) var(--s2) var(--s4);
+}
+
+.filerow__name { font-weight: 500; }
+.filerow__meta { color: var(--ink-muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.filerow__meta::before { content: "\b7"; margin: 0 var(--s2); color: var(--line); }
+.filerow__remove { margin-left: auto; flex: none; }
+
+/* Convert tool: the installed-apps note and the document queue. */
+
+.converters { margin-top: var(--s2); color: var(--ink-muted); font-size: 0.8125rem; }
+
+.filerowlist { margin-top: var(--s3); display: grid; gap: var(--s2); }
+.filerowlist .filerow { margin-top: 0; }
+
+/* The page strip - the signature element. Sheets of paper on the desk. */
+
+.strip { margin-top: var(--s5); }
+
+.strip__empty { color: var(--ink-muted); font-size: 0.9375rem; }
+
+.strip:has(.strip__group) .strip__empty { display: none; }
+
+.strip__line {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--s1) 2px var(--s3);
+}
+
+/* File group: sheets, page numbers, then the file name underneath. */
+
+.strip__group { position: relative; flex: none; display: flex; flex-direction: column; }
+
+.strip__group + .strip__group { margin-left: var(--s4); padding-left: var(--s4); border-left: 1px solid var(--line); }
+
+.strip__pages { display: flex; gap: var(--s2); }
+
+.strip__page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  cursor: grab;
+}
+
+.strip__page:active { cursor: grabbing; }
+
+.strip__sheet {
+  position: relative;
+  width: 110px;
+  background: var(--paper);
+  border-radius: var(--r-page);
+  box-shadow: var(--sheet-shadow); /* taste-skill-ignore: shadow - DESIGN.md: only page thumbnails have a shadow */
+}
+
+.strip__sheet.is-loading { aspect-ratio: 1 / 1.414; }
+/* A file whose pages can't be opened without the password (Unlock): the
+   sheet holds a quiet padlock instead of paper it can't show yet. */
+
+.strip__sheet.is-locked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1.414;
+}
+
+.strip__lockicon { width: 22px; height: 22px; color: var(--ink-muted); }
+
+.strip__canvas { width: 110px; height: auto; border-radius: var(--r-page); }
+
+.strip__label {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Two offset borders behind the top sheet: a stack of files (merge). */
+
+.strip__group:not(.strip__group--alone) .strip__pages .strip__sheet:first-child::before,
+.strip__group:not(.strip__group--alone) .strip__pages .strip__sheet:first-child::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-page);
+  z-index: -1;
+}
+
+.strip__group:not(.strip__group--alone) .strip__pages .strip__sheet:first-child::before { transform: translate(4px, 4px); }
+
+.strip__group:not(.strip__group--alone) .strip__pages .strip__sheet:first-child::after { transform: translate(8px, 8px); }
+
+.strip__caption {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  max-width: 480px;
+}
+
+.strip__filename { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.strip__meta { color: var(--ink-muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; flex: none; }
+
+.strip__remove { width: 32px; height: 32px; flex: none; }
+
+/* Insertion caret for reordering: a 2px accent line. */
+
+.strip__caret {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.strip__caret.is-on { opacity: 1; }
+
+/* Buttons. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 var(--s4);
+  border-radius: var(--r-control);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.btn--primary { background: var(--accent); color: var(--accent-ink); }
+
+.btn--primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000000); }
+
+.btn--primary:active { transform: translateY(1px); }
+
+.btn--primary:disabled { opacity: 0.4; cursor: default; transform: none; background: var(--accent); }
+
+.btn--secondary { border: 1px solid var(--line); background: transparent; }
+
+.btn--secondary:hover { background: var(--surface-2); }
+
+.btn--secondary:active { transform: translateY(1px); }
+
+/* Status and messaging. */
+
+.actionbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  min-height: 40px;
+}
+
+.actionbar__status {
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.actionbar__status--ok { color: var(--ok); }
+
+.notice {
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--danger);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  padding: var(--s3) var(--s4);
+  color: var(--danger);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Progress: 2px bar under the action row. */
+
+.progress {
+  position: relative;
+  height: 2px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.progress.is-indeterminate .progress__bar {
+  width: 36%;
+  transform: translateX(-110%);
+  animation: progress-sweep 1.6s cubic-bezier(.65, .05, .36, 1) infinite;
+}
+
+@keyframes progress-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(390%); }
+}
+
+/* Details panel (Info). */
+
+.panel {
+  margin-top: var(--s5);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r-panel);
+  padding: var(--s5);
+}
+
+.panel__title {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+/* Extracted text (Text tool): a quiet reading panel, one block per page. */
+
+.textpanel__box {
+  margin-top: var(--s4);
+  max-height: 480px;
+  overflow: auto;
+}
+
+.textpanel__page + .textpanel__page {
+  border-top: 1px solid var(--line);
+  margin-top: var(--s3);
+  padding-top: var(--s4);
+}
+
+.textpanel__pageno {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--s2);
+}
+
+.textpanel__text { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.textpanel__note { margin-top: var(--s3); font-size: 0.8125rem; color: var(--ink-muted); }
+
+.details { margin-top: var(--s3); }
+
+.details__row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: var(--s5);
+  padding: var(--s2) 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.details__dt { color: var(--ink-muted); }
+
+.details__dd { color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+
+/* Options row and fields: label above, input, helper line below (DESIGN.md).
+   One set of classes for every tool's options - no per-tool styling. */
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4) var(--s5);
+  align-items: flex-start;
+  margin-top: var(--s5);
+}
+
+.field { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
+
+.field__label { font-size: 0.8125rem; font-weight: 600; color: var(--ink); }
+
+.field__input {
+  width: 240px;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.field__input:disabled { color: var(--ink-muted); background: var(--surface-2); }
+
+.field__hint { font-size: 0.8125rem; color: var(--ink-muted); }
+
+/* Password fields (Lock, Unlock): the show/hide toggle sits inside the
+   input, reusing .iconbtn as it is. */
+
+.field__row { position: relative; width: 240px; max-width: 100%; }
+
+.field__input--eye { padding-right: 44px; }
+
+.field__eye {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+/* Radio pair (split mode). Native radios, accent-coloured. */
+
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1) var(--s4);
+  min-height: 40px;
+}
+
+.choice__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.choice__opt input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; flex: none; }
+
+/* Angle toggles (rotate): pressed state fills with surface-2. */
+
+.choice__btn { min-width: 76px; }
+
+.choice__btn[aria-pressed="true"] {
+  background: var(--surface-2);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+/* Selected pages (extract, rotate): a 2px accent ring on the sheet. */
+
+.strip__page.is-selected .strip__sheet { box-shadow: var(--sheet-shadow), 0 0 0 2px var(--accent); }
+
+.strip__page--select { cursor: pointer; }
+
+/* Pages marked for deletion: struck through and dimmed (DESIGN.md). */
+
+.strip__page.is-struck .strip__sheet { opacity: 0.4; }
+
+.strip__page.is-struck .strip__sheet::after {
+  content: "";
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: 50%;
+  height: 2px;
+  background: var(--danger);
+  transform: rotate(-18deg);
+}
+
+/* Cut lines (split): dashed verticals between sheets, click to toggle. */
+
+.strip__cut {
+  position: relative;
+  flex: none;
+  width: 16px;
+  align-self: stretch;
+  padding: 0;
+}
+
+.strip__cut::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: calc(50% - 1px);
+  border-left: 2px dashed var(--line);
+}
+
+.strip__cut:hover::before,
+.strip__cut:focus-visible::before { border-left-color: var(--accent); }
+
+.strip__cut[aria-pressed="true"]::before {
+  border-left-style: solid;
+  border-left-color: var(--accent);
+}
+
+/* Image sheets (images to PDF): white paper, photo fitted inside. */
+
+.strip__sheet--photo {
+  aspect-ratio: 1 / 1.414;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s2);
+}
+
+.strip__img { max-width: 100%; max-height: 100%; border-radius: var(--r-page); }
+
+/* Informational sheets (info, split pages) are not draggable. */
+
+.strip__page[role="img"] { cursor: default; }
+
+/* Touch: the 16px cut line keeps its look but grows a wide invisible hit
+   area on coarse pointers, so it comes close to the 44px target. */
+@media (pointer: coarse) {
+  .strip__cut::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -14px;
+    right: -14px;
+  }
+}
+
+/* Phone sizes for components. This block sits after every component
+   definition on purpose: the base rules share its specificity, so the
+   phone sizes only win when they come later in the file. */
+@media (max-width: 699px) {
+  .btn { width: 100%; height: 44px; }
+
+  .actionbar { flex-wrap: wrap; }
+
+  .actionbar__status { width: 100%; text-align: left; margin-left: 0; }
+
+  .iconbtn { width: 44px; height: 44px; }
+
+  .strip__remove { width: 44px; height: 44px; }
+
+  .details__row { grid-template-columns: minmax(0, 1fr); row-gap: 2px; padding: var(--s2) 0; }
+
+  .choice__opt, .choice__btn { height: 44px; }
+
+  .strip__cut { width: 24px; }
+
+  .field__input { width: 100%; height: 44px; }
+
+  .field__eye { top: 2px; right: 2px; width: 40px; height: 40px; }
+}
+
+
+/* --------------------------------------------------------------------------
+   6. States
+   -------------------------------------------------------------------------- */
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dropzone:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Dragging in the strip */
+
+.strip__group { transition: transform 180ms ease-out; }
+
+.strip__group.is-dragging { opacity: 0.4; transform: translateY(-2px); }
+
+.strip__page:hover .strip__sheet { box-shadow: var(--sheet-shadow), 0 0 0 1px var(--line); }
+
+/* Working: the page strip keeps its sheets, the button carries the state. */
+
+.is-working { cursor: progress; }
+
+.is-working .btn--primary { pointer-events: none; }
+
+/* Reordering transition handled by JS (WAAPI); respect reduced motion. */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .progress.is-indeterminate .progress__bar {
+    width: 100%;
+    opacity: 0.35;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Dark overrides (not an inversion: pages stay white paper)
+   -------------------------------------------------------------------------- */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #101319;
+  --surface: #181C24;
+  --surface-2: #212631;
+  --line: #2E3441;
+  --ink: #E8EAEF;
+  --ink-muted: #98A1B2;
+  --accent: #8097FF;
+  --accent-ink: #0B0F1E;
+  --ok: #4FC38A;
+  --danger: #FF8A80;
+  --paper: #F4F5F7;
+}
+
+/* --------------------------------------------------------------------------
+   8. Home (the shelf) chrome (appended for the Ashen Press scene)
+   The 3D scene is styled in static/shelf/shelf.css and keeps its authored
+   palette on purpose. Only the Folio chrome around it lives here, on the
+   tokens above, so it follows light and dark like every other panel.
+   -------------------------------------------------------------------------- */
+
+/* The home view: the shelf room fills what is left under the top bar. */
+
+.home {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--s5) var(--s7) var(--s6);
+}
+
+/* Home mode: the frame stretches instead of sitting at a fixed height.
+   Specificity beats the #shelf-root height in shelf.css. */
+main.home #shelf-root {
+  flex: 1;
+  height: auto;
+  min-height: clamp(380px, 62vh, 640px);
+  margin-top: var(--s5);
+}
+
+@media (max-width: 1099px) {
+  .home { padding: var(--s5); }
+}
+
+@media (max-width: 699px) {
+  .home { padding: var(--s5) var(--s4) var(--s6); }
+
+  /* The room is the page on a phone: it takes most of the screen, which
+     also keeps real overflow (and real page scrolling) on short views. */
+  main.home #shelf-root { min-height: clamp(480px, 68vh, 640px); }
+}
+
+/* Screen-reader-only text (the page title and the tool list). */
+.wb__sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The hidden accessible tool list doubles as the no-WebGL fallback: the
+   app un-hides it (toolindex--open) and the list becomes real links. */
+nav.toolindex.toolindex--open {
+  position: static;
+  width: auto; height: auto;
+  margin: var(--s5) 0 0;
+  padding: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.toolindex__note {
+  margin: 0 0 var(--s4);
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  max-width: 66ch;
+}
+
+.toolindex__name {
+  margin: var(--s4) 0 var(--s2);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+.toolindex__item {
+  display: block;
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-control);
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.toolindex__item:hover { background: color-mix(in srgb, var(--ink) 5%, var(--surface-2)); }
+
+.toolindex__item strong { color: var(--ink); font-weight: 600; font-size: 0.9375rem; }
+
+.toolindex__item span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.875rem;
+}
+
+
+
+/* --------------------------------------------------------------------------
+   9. Watermark preview and the text edit view
+   -------------------------------------------------------------------------- */
+
+/* The bundled DejaVu faces (static/fonts, DejaVu licence) mirror what the
+   server embeds, so the strip preview draws with the same families the
+   PDF will get. Browsers fetch a face only when rendered text uses it. */
+
+@font-face { font-family: "DejaVu Sans"; src: url("fonts/DejaVuSans.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Sans"; src: url("fonts/DejaVuSans-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Sans"; src: url("fonts/DejaVuSans-Oblique.ttf") format("truetype"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "DejaVu Sans"; src: url("fonts/DejaVuSans-BoldOblique.ttf") format("truetype"); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "DejaVu Serif"; src: url("fonts/DejaVuSerif.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Serif"; src: url("fonts/DejaVuSerif-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Serif"; src: url("fonts/DejaVuSerif-Italic.ttf") format("truetype"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "DejaVu Serif"; src: url("fonts/DejaVuSerif-BoldItalic.ttf") format("truetype"); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("fonts/DejaVuSansMono.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("fonts/DejaVuSansMono-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("fonts/DejaVuSansMono-Oblique.ttf") format("truetype"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "DejaVu Sans Mono"; src: url("fonts/DejaVuSansMono-BoldOblique.ttf") format("truetype"); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* Opacity slider (watermark): same footprint as the other inputs. */
+
+.field__range { width: 240px; max-width: 100%; accent-color: var(--accent); }
+
+/* Live watermark preview: absolutely positioned stamps over each sheet,
+   same geometry the server uses. Pointer-events off: the strip stays
+   lazy-rendering and non-interactive. */
+
+.wm-preview {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--r-page);
+  pointer-events: none;
+}
+
+.wm-preview__item { position: absolute; max-width: none; }
+
+.wm-preview__text { line-height: 1.2; white-space: nowrap; }
+
+/* Text edit view: the page, its span overlay and the queue. The page box
+   casts the one allowed sheet shadow, like every page thumbnail. */
+
+.edit-stage {
+  margin-top: var(--s5);
+  display: flex;
+  justify-content: center;
+}
+
+.edit-canvasbox {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-page);
+  box-shadow: var(--sheet-shadow); /* taste-skill-ignore: shadow - page thumbnail */
+  overflow: hidden;
+  cursor: default;
+}
+
+.edit-stage.is-placing .edit-canvasbox { cursor: crosshair; }
+
+.edit-canvas { display: block; }
+
+.edit-overlay { position: absolute; inset: 0; }
+
+.edit-span {
+  position: absolute;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.edit-span:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.edit-span.is-selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.edit-span.is-edited { border-style: dashed; }
+
+.edit-span.is-deleted {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.edit-span.is-new {
+  border-color: var(--ok);
+  border-style: dashed;
+  cursor: default;
+}
+
+.edit-span.is-draft { border-style: dotted; }
+
+/* Added-text boxes are drawn divs, not buttons: they never take clicks. */
+
+.edit-span[aria-hidden="true"] { pointer-events: none; }
+
+.edit-hint { margin-top: var(--s3); }
+
+/* The phone line shows only where the page gets cramped. */
+
+.edit-hint--phone { display: none; }
+
+@media (max-width: 699px) {
+  .edit-hint--phone { display: block; }
+}
+
+/* The queue: one row per edit, struck through when undone. */
+
+.edit-queue {
+  list-style: none;
+  margin: var(--s3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+.edit-queue__item {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s1) var(--s2);
+  border-radius: var(--r-control);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.edit-queue__item:hover { background: var(--surface-2); }
+
+.edit-queue__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-queue__acts { display: inline-flex; gap: var(--s1); flex: none; }
+
+.edit-queue__btn { width: 32px; height: 32px; }
+
+.edit-queue__item.is-undone .edit-queue__text {
+  text-decoration: line-through;
+  color: var(--ink-muted);
+}

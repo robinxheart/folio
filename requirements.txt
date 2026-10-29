@@ -1,0 +1,6 @@
+flask
+pypdf
+pillow
+pywin32
+cryptography
+pymupdf

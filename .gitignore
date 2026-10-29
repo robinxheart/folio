@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+temp/
+samples/
+.taste-skill/
+.agents/
+skills-lock.json
+ashen-press-source.html
+.venv/
+venv/
+.env

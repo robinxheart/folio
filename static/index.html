@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Folio — PDF tools</title>
+<link rel="icon" href="data:,">
+<link rel="preload" href="/static/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/shelf/shelf.css">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <!-- Icons: Lucide (lucide-static v1.62.0), ISC license, bundled locally -->
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></symbol>
+  <symbol id="i-merge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 4-4 4 4"/><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22"/><path d="m20 22-5-5"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></symbol>
+  <symbol id="i-file-output" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.226 20.925A2 2 0 0 0 6 22h12a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.127"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m5 11-3 3"/><path d="m5 17-3-3h10"/></symbol>
+  <symbol id="i-file-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m14.5 12.5-5 5"/><path d="m9.5 12.5 5 5"/></symbol>
+  <symbol id="i-rotate-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-minimize-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10 7-7"/><path d="M20 10h-6V4"/><path d="m3 21 7-7"/><path d="M4 14h6v6"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-lock-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></symbol>
+  <symbol id="i-file-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.159 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+</svg>
+
+<noscript><p class="noscript">Folio needs JavaScript. Turn it on and refresh.</p></noscript>
+
+<div class="app">
+  <div class="view" id="view-home" hidden tabindex="-1">
+    <header class="topbar">
+      <span class="topbar__brand">Folio</span>
+      <div class="topbar__actions">
+        <button type="button" class="iconbtn theme-toggle" id="theme-toggle-home" aria-label="Switch to dark theme">
+          <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="home" id="home">
+      <h1 class="wb__sr">Folio — the tool shelf</h1>
+
+      <div class="shelf-frame" id="shelf-root">
+        <div id="shelf-stage">
+          <canvas id="gl" tabindex="0" aria-label="Folio tool shelf: ten volumes, one per tool — Merge, Split, Pages, Rotate, Compress, Text, Watermark, Protect, To PDF and Info. Use the arrow keys to browse, Enter to take a volume down or turn it over, Escape to put it back."></canvas>
+          <canvas class="wash" id="wash" aria-hidden="true"></canvas>
+          <div class="detail" id="detail">
+            <p class="meta" id="detail-meta"></p>
+            <h2 id="detail-title"></h2>
+            <p id="detail-desc"></p>
+            <div class="acts">
+              <button type="button" id="detail-look">Open</button>
+              <button type="button" id="detail-close">Close</button>
+            </div>
+          </div>
+          <div class="hint" id="hint" aria-hidden="true">Drag to turn</div>
+          <footer><div class="tl" id="tl"></div></footer>
+          <div class="mbar" id="mbar">
+            <div class="mbar-txt"><p id="mbar-meta"></p><h2 id="mbar-title"></h2></div>
+            <div class="mbar-acts">
+              <button type="button" id="mbar-details">Details</button>
+              <button type="button" class="solid" id="mbar-look">Open</button>
+            </div>
+          </div>
+          <button type="button" class="menubtn" id="menubtn" aria-label="All tools"><span></span><span></span></button>
+          <nav class="menu" id="menu" hidden aria-label="Tool list"></nav>
+          <div class="loader" id="loader" role="status" aria-label="Loading the shelf">
+            <div class="bar"><i id="barfill"></i></div>
+            <p class="loader__txt">Laying out the shelf…</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="toolindex wb__sr" id="toolindex" aria-label="All tools">
+        <p class="toolindex__note" id="toolindex-note" hidden>This browser can't show the shelf, so here are the ten tools as plain links. They all work the same.</p>
+        <p class="toolindex__name">Organize</p>
+        <a class="toolindex__item" href="#/merge" data-tool="merge"><strong>Merge</strong><span>Combine PDFs in the order you arrange them</span></a>
+        <a class="toolindex__item" href="#/split" data-tool="split"><strong>Split</strong><span>Cut a PDF into parts at lines you click, or one file per page</span></a>
+        <a class="toolindex__item" href="#/pages" data-tool="pages"><strong>Pages</strong><span>Take chosen pages out, or take them away</span></a>
+        <p class="toolindex__name">Edit</p>
+        <a class="toolindex__item" href="#/rotate" data-tool="rotate"><strong>Rotate</strong><span>Turn chosen pages by 90°, 180° or 270°</span></a>
+        <a class="toolindex__item" href="#/compress" data-tool="compress"><strong>Compress</strong><span>Shrink a PDF (lossless, or Strong with an image-quality trade-off)</span></a>
+        <a class="toolindex__item" href="#/text" data-tool="text"><strong>Text</strong><span>Read the words in a PDF, or rewrite them in place</span></a>
+        <a class="toolindex__item" href="#/watermark" data-tool="watermark"><strong>Watermark</strong><span>Stamp text or a picture across the pages of a copy</span></a>
+        <p class="toolindex__name">Protect</p>
+        <a class="toolindex__item" href="#/protect" data-tool="protect"><strong>Protect</strong><span>Add a password, or make a copy that opens without one</span></a>
+        <p class="toolindex__name">Convert</p>
+        <a class="toolindex__item" href="#/to-pdf" data-tool="to-pdf"><strong>To PDF</strong><span>Turn Word, Excel, PowerPoint, image and a few other files into PDFs</span></a>
+        <p class="toolindex__name">Inspect</p>
+        <a class="toolindex__item" href="#/info" data-tool="info"><strong>Info</strong><span>File details: pages, size, version, title and metadata</span></a>
+      </nav>
+    </main>
+  </div>
+
+  <div class="view" id="view-tool" hidden tabindex="-1">
+    <header class="topbar">
+      <a class="topbar__brand" href="#/" id="brand-home" title="Back to the shelf">Folio</a>
+      <p class="topbar__tool" id="tool-title"></p>
+      <div class="topbar__actions">
+        <a class="btn btn--secondary topbar__home" id="shelf-btn" href="#/">
+          <svg class="icon" aria-hidden="true"><use href="#i-library"/></svg><span>Shelf</span>
+        </a>
+        <button type="button" class="iconbtn theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+          <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="wb">
+
+      <section class="wb__panel" id="panel-merge">
+        <h1 class="wb__title">Merge PDFs</h1>
+        <p class="wb__help">Combine files in the order shown below.</p>
+
+        <label class="dropzone" id="merge-zone">
+          <input type="file" class="dropzone__input" id="merge-input" accept="application/pdf,.pdf" multiple>
+          <span class="dropzone__text">Drop PDFs here, or <span class="dropzone__link">choose files</span></span>
+        </label>
+
+        <div class="strip" id="merge-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line">
+            <span class="strip__caret" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <p class="notice" id="merge-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="merge-go" data-label="Merge PDFs" disabled>Merge PDFs</button>
+          <a class="btn btn--primary" id="merge-download" hidden download="merged.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="merge-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="merge-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="merge-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel" id="panel-info" hidden>
+        <h1 class="wb__title">PDF info</h1>
+        <p class="wb__help">Page count, file size and metadata for one PDF.</p>
+
+        <label class="dropzone" id="info-zone">
+          <input type="file" class="dropzone__input" id="info-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="info-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="info-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <p class="notice" id="info-notice" role="alert" hidden aria-live="polite"></p>
+
+        <section class="panel" id="info-details" hidden>
+          <h2 class="panel__title">File details</h2>
+          <dl class="details">
+            <div class="details__row"><dt class="details__dt">Pages</dt><dd class="details__dd num" id="info-pages"></dd></div>
+            <div class="details__row"><dt class="details__dt">File size</dt><dd class="details__dd num" id="info-size"></dd></div>
+            <div class="details__row"><dt class="details__dt">PDF version</dt><dd class="details__dd" id="info-version"></dd></div>
+            <div class="details__row"><dt class="details__dt">Created</dt><dd class="details__dd" id="info-created"></dd></div>
+            <div class="details__row"><dt class="details__dt">Modified</dt><dd class="details__dd" id="info-modified"></dd></div>
+            <div class="details__row"><dt class="details__dt">Title</dt><dd class="details__dd" id="info-title"></dd></div>
+            <div class="details__row"><dt class="details__dt">Author</dt><dd class="details__dd" id="info-author"></dd></div>
+            <div class="details__row"><dt class="details__dt">Subject</dt><dd class="details__dd" id="info-subject"></dd></div>
+            <div class="details__row"><dt class="details__dt">Keywords</dt><dd class="details__dd" id="info-keywords"></dd></div>
+            <div class="details__row"><dt class="details__dt">Creator</dt><dd class="details__dd" id="info-creator"></dd></div>
+            <div class="details__row"><dt class="details__dt">Producer</dt><dd class="details__dd" id="info-producer"></dd></div>
+          </dl>
+        </section>
+
+        <div class="actionbar">
+          <p class="actionbar__status" id="info-status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="wb__panel" id="panel-split" hidden>
+        <h1 class="wb__title">Split PDF</h1>
+        <p class="wb__help">Cut the file into parts at the lines you choose.</p>
+
+        <label class="dropzone" id="split-zone">
+          <input type="file" class="dropzone__input" id="split-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="split-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="split-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="split-options" hidden>
+          <div class="field">
+            <span class="field__label" id="split-mode-label">Split into</span>
+            <div class="choice" role="radiogroup" aria-labelledby="split-mode-label">
+              <label class="choice__opt"><input type="radio" name="split-mode" value="parts" checked> One file per part</label>
+              <label class="choice__opt"><input type="radio" name="split-mode" value="pages"> One file per page</label>
+            </div>
+            <p class="field__hint" id="split-hint">Click between two pages to add a cut line.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="split-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="split-go" data-label="Split PDF" disabled>Split PDF</button>
+          <a class="btn btn--primary" id="split-download" hidden download="split.zip">Download</a>
+          <button type="button" class="btn btn--secondary" id="split-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="split-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="split-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel" id="panel-pages" hidden>
+        <h1 class="wb__title">Pages</h1>
+        <p class="wb__help">Take pages out, or take them away. Both work on a copy.</p>
+
+        <div class="tabs" role="tablist" aria-label="Pages tools">
+          <button type="button" class="tab" role="tab" id="pages-tab-extract" data-tab="extract" aria-controls="panel-extract" aria-selected="true" tabindex="0">Extract</button>
+          <button type="button" class="tab" role="tab" id="pages-tab-delete" data-tab="delete" aria-controls="panel-delete" aria-selected="false" tabindex="-1">Delete</button>
+        </div>
+
+        <section class="wb__panel wb__sub" role="tabpanel" id="panel-extract" aria-labelledby="pages-tab-extract" hidden>
+        <h2 class="wb__title">Extract pages</h2>
+        <p class="wb__help">Keep only the pages you choose.</p>
+
+        <label class="dropzone" id="extract-zone">
+          <input type="file" class="dropzone__input" id="extract-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="extract-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="extract-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="extract-options" hidden>
+          <div class="field">
+            <label class="field__label" for="extract-pages">Pages</label>
+            <input type="text" class="field__input num" id="extract-pages" autocomplete="off" spellcheck="false">
+            <p class="field__hint">For example 1-3,5,8-.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="extract-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="extract-go" data-label="Extract pages" disabled>Extract pages</button>
+          <a class="btn btn--primary" id="extract-download" hidden download="extracted.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="extract-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="extract-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="extract-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel wb__sub" role="tabpanel" id="panel-delete" aria-labelledby="pages-tab-delete" hidden>
+        <h2 class="wb__title">Delete pages</h2>
+        <p class="wb__help">Remove the pages you choose.</p>
+
+        <label class="dropzone" id="delete-zone">
+          <input type="file" class="dropzone__input" id="delete-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="delete-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="delete-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="delete-options" hidden>
+          <div class="field">
+            <label class="field__label" for="delete-pages">Pages</label>
+            <input type="text" class="field__input num" id="delete-pages" autocomplete="off" spellcheck="false">
+            <p class="field__hint">For example 1-3,5,8-.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="delete-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="delete-go" data-label="Delete pages" disabled>Delete pages</button>
+          <a class="btn btn--primary" id="delete-download" hidden download="remaining.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="delete-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="delete-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="delete-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+        </section>
+      </section>
+
+      <section class="wb__panel" id="panel-rotate" hidden>
+        <h1 class="wb__title">Rotate pages</h1>
+        <p class="wb__help">Turn pages by 90, 180 or 270 degrees.</p>
+
+        <label class="dropzone" id="rotate-zone">
+          <input type="file" class="dropzone__input" id="rotate-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="rotate-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="rotate-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="rotate-options" hidden>
+          <div class="field">
+            <span class="field__label" id="rotate-angles-label">Turn</span>
+            <div class="choice" role="group" aria-labelledby="rotate-angles-label">
+              <button type="button" class="btn btn--secondary choice__btn rot-angle" data-degrees="90" aria-pressed="false">90°</button>
+              <button type="button" class="btn btn--secondary choice__btn rot-angle" data-degrees="180" aria-pressed="false">180°</button>
+              <button type="button" class="btn btn--secondary choice__btn rot-angle" data-degrees="270" aria-pressed="false">270°</button>
+            </div>
+            <p class="field__hint">Choose 90, 180 or 270 degrees.</p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="rotate-pages">Pages</label>
+            <input type="text" class="field__input num" id="rotate-pages" autocomplete="off" spellcheck="false">
+            <p class="field__hint">Leave empty to turn every page.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="rotate-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="rotate-go" data-label="Rotate pages" disabled>Rotate pages</button>
+          <a class="btn btn--primary" id="rotate-download" hidden download="rotated.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="rotate-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="rotate-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="rotate-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel" id="panel-compress" hidden>
+        <h1 class="wb__title">Compress PDF</h1>
+        <p class="wb__help">Trim the file size and keep the same pages.</p>
+
+        <label class="dropzone" id="compress-zone">
+          <input type="file" class="dropzone__input" id="compress-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="compress-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="compress-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="compress-options" hidden>
+          <div class="field">
+            <span class="field__label" id="compress-level-label">Level</span>
+            <div class="choice" role="group" aria-labelledby="compress-level-label">
+              <button type="button" class="btn btn--secondary choice__btn compress-level" data-level="standard" aria-pressed="true">Standard</button>
+              <button type="button" class="btn btn--secondary choice__btn compress-level" data-level="strong" aria-pressed="false">Strong</button>
+            </div>
+            <p class="field__hint" id="compress-hint">Lossless. Rewrites the file without touching how it looks.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="compress-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="compress-go" data-label="Compress PDF" disabled>Compress PDF</button>
+          <a class="btn btn--primary" id="compress-download" hidden download="compressed.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="compress-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="compress-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="compress-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel" id="panel-watermark" hidden>
+        <h1 class="wb__title">Watermark</h1>
+        <p class="wb__help">Stamp text or a picture across the pages of a copy.</p>
+
+        <label class="dropzone" id="watermark-zone">
+          <input type="file" class="dropzone__input" id="watermark-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="watermark-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="watermark-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="watermark-options" hidden>
+          <div class="field">
+            <span class="field__label" id="watermark-kind-label">Watermark</span>
+            <div class="choice" role="radiogroup" aria-labelledby="watermark-kind-label">
+              <label class="choice__opt"><input type="radio" name="watermark-kind" value="text" checked> Text</label>
+              <label class="choice__opt"><input type="radio" name="watermark-kind" value="image"> Image</label>
+            </div>
+          </div>
+          <div class="field" id="watermark-text-field">
+            <label class="field__label" for="watermark-text">Text</label>
+            <input type="text" class="field__input" id="watermark-text" autocomplete="off" spellcheck="false" placeholder="DRAFT">
+          </div>
+          <div class="field" id="watermark-image-field" hidden>
+            <label class="field__label" for="watermark-image">Image</label>
+            <input type="file" id="watermark-image" accept=".png,.jpg,.jpeg,image/png,image/jpeg">
+            <p class="field__hint">PNG or JPG. Transparency in the file is kept.</p>
+          </div>
+          <div class="field" id="watermark-font-field">
+            <label class="field__label" for="watermark-font">Font</label>
+            <select class="field__input" id="watermark-font"></select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-size">Size (pt)</label>
+            <input type="number" class="field__input num" id="watermark-size" value="48" min="4" max="288">
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-colour">Colour</label>
+            <input type="color" class="field__input" id="watermark-colour" value="#9aa0a6">
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-opacity">Opacity</label>
+            <input type="range" class="field__range" id="watermark-opacity" min="5" max="100" value="20" aria-describedby="watermark-opacity-hint">
+            <p class="field__hint" id="watermark-opacity-hint">20%</p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-angle">Angle (degrees)</label>
+            <input type="number" class="field__input num" id="watermark-angle" value="45" min="-180" max="180" step="5">
+          </div>
+          <div class="field">
+            <span class="field__label" id="watermark-position-label">Position</span>
+            <div class="choice" role="group" aria-labelledby="watermark-position-label">
+              <button type="button" class="btn btn--secondary choice__btn wm-position" data-position="centre" aria-pressed="true">Centre</button>
+              <button type="button" class="btn btn--secondary choice__btn wm-position" data-position="tiled" aria-pressed="false">Tiled</button>
+              <button type="button" class="btn btn--secondary choice__btn wm-position" data-position="corners" aria-pressed="false">Corners</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-margin">Margin (pt)</label>
+            <input type="number" class="field__input num" id="watermark-margin" value="36" min="0" max="300">
+          </div>
+          <div class="field" id="watermark-scale-field" hidden>
+            <label class="field__label" for="watermark-scale">Image size</label>
+            <input type="number" class="field__input num" id="watermark-scale" value="30" min="2" max="100">
+            <p class="field__hint">Percent of the page's short side.</p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="watermark-pages">Pages</label>
+            <input type="text" class="field__input num" id="watermark-pages" autocomplete="off" spellcheck="false">
+            <p class="field__hint">Leave empty for every page. For example 1-3,5,8-.</p>
+          </div>
+          <div class="field">
+            <label class="choice__opt"><input type="checkbox" id="watermark-behind"> Put the stamp behind the page content</label>
+          </div>
+        </div>
+
+        <p class="notice" id="watermark-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="watermark-go" data-label="Add watermark" disabled>Add watermark</button>
+          <a class="btn btn--primary" id="watermark-download" hidden download="watermarked.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="watermark-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="watermark-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="watermark-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+      <section class="wb__panel" id="panel-text" hidden>
+        <h1 class="wb__title">Text</h1>
+        <p class="wb__help">Read the words in a PDF, or rewrite them in place.</p>
+
+        <div class="tabs" role="tablist" aria-label="Text tools">
+          <button type="button" class="tab" role="tab" id="text-tab-read" data-tab="read" aria-controls="panel-text-read" aria-selected="true" tabindex="0">Read</button>
+          <button type="button" class="tab" role="tab" id="text-tab-edit" data-tab="edit" aria-controls="panel-text-edit" aria-selected="false" tabindex="-1">Edit</button>
+        </div>
+
+        <section class="wb__panel wb__sub" role="tabpanel" id="panel-text-read" aria-labelledby="text-tab-read" hidden>
+        <h2 class="wb__title">Extract text</h2>
+        <p class="wb__help">Pull the words out of every page.</p>
+
+        <label class="dropzone" id="text-zone">
+          <input type="file" class="dropzone__input" id="text-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="text-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="text-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <p class="notice" id="text-notice" role="alert" hidden aria-live="polite"></p>
+
+        <section class="panel textpanel" id="text-details" hidden>
+          <h2 class="panel__title">Extracted text</h2>
+          <div class="textpanel__box" id="text-box"></div>
+          <p class="textpanel__note" id="text-note" hidden></p>
+        </section>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="text-go" data-label="Extract text" disabled>Extract text</button>
+          <button type="button" class="btn btn--primary" id="text-copy" hidden>Copy</button>
+          <a class="btn btn--primary" id="text-download" hidden download="text.txt">Download .txt</a>
+          <button type="button" class="btn btn--secondary" id="text-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="text-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="text-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+        </section>
+
+        <section class="wb__panel wb__sub" role="tabpanel" id="panel-text-edit" aria-labelledby="text-tab-edit" hidden>
+        <h2 class="wb__title">Edit text</h2>
+        <p class="wb__help">Change or remove words in place. Nothing is written until you save.</p>
+
+        <label class="dropzone" id="edit-zone">
+          <input type="file" class="dropzone__input" id="edit-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="edit-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="options" id="edit-password-options" hidden>
+          <div class="field">
+            <label class="field__label" for="edit-password">Password</label>
+            <div class="field__row">
+              <input type="password" class="field__input field__input--eye" id="edit-password" autocomplete="off" spellcheck="false">
+              <button type="button" class="iconbtn field__eye" id="edit-eye" aria-label="Show password" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+              </button>
+            </div>
+            <p class="field__hint" id="edit-password-hint" aria-live="polite">This PDF is locked. Enter its password to continue.</p>
+            <button type="button" class="btn btn--primary" id="edit-unlock">Continue</button>
+          </div>
+        </div>
+
+        <div class="strip" id="edit-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <p class="field__hint edit-hint" id="edit-pagehint" aria-live="polite" hidden></p>
+
+        <div class="edit-stage" id="edit-stage" hidden>
+          <div class="edit-canvasbox" id="edit-canvasbox">
+            <canvas class="edit-canvas" id="edit-canvas"></canvas>
+            <div class="edit-overlay" id="edit-overlay" aria-label="Text on this page"></div>
+          </div>
+        </div>
+
+        <p class="field__hint edit-hint edit-hint--phone" id="edit-phone-hint">For precise edits a larger screen works best. You can still scroll and zoom here.</p>
+
+        <section class="panel" id="edit-panel" hidden>
+          <h3 class="panel__title" id="edit-panel-title">Selected text</h3>
+          <div class="field">
+            <label class="field__label" for="edit-text">Text</label>
+            <input type="text" class="field__input" id="edit-text" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label class="field__label" for="edit-font">Font</label>
+            <select class="field__input" id="edit-font"></select>
+            <p class="field__hint" id="edit-fontnote" hidden></p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="edit-size">Size (pt)</label>
+            <input type="number" class="field__input num" id="edit-size" min="1" max="288" step="0.5">
+          </div>
+          <div class="field">
+            <span class="field__label" id="edit-style-label">Style</span>
+            <div class="choice" role="group" aria-labelledby="edit-style-label">
+              <button type="button" class="btn btn--secondary choice__btn edit-style" id="edit-bold" aria-pressed="false">Bold</button>
+              <button type="button" class="btn btn--secondary choice__btn edit-style" id="edit-italic" aria-pressed="false">Italic</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="edit-colour">Colour</label>
+            <input type="color" class="field__input" id="edit-colour" value="#202124">
+          </div>
+          <div class="choice">
+            <button type="button" class="btn btn--primary choice__btn" id="edit-apply" disabled>Apply change</button>
+            <button type="button" class="btn btn--secondary choice__btn" id="edit-del" disabled>Delete text</button>
+            <button type="button" class="btn btn--secondary choice__btn" id="edit-add" aria-pressed="false">Add text</button>
+          </div>
+        </section>
+
+        <section class="panel" id="edit-queue-panel" hidden>
+          <h3 class="panel__title">Queued edits</h3>
+          <ul class="edit-queue" id="edit-queue"></ul>
+          <p class="field__hint">Nothing is written into the file until you save.</p>
+        </section>
+
+        <p class="notice" id="edit-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="edit-save" data-label="Save PDF" disabled>Save PDF</button>
+          <a class="btn btn--primary" id="edit-download" hidden download="edited.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="edit-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="edit-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="edit-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+        </section>
+      </section>
+
+      <section class="wb__panel" id="panel-protect" hidden>
+        <h1 class="wb__title">Protect</h1>
+        <p class="wb__help">Add a password, or take one off. Both work on a copy of your file.</p>
+
+        <div class="tabs" role="tablist" aria-label="Protect modes">
+          <button type="button" class="tab" role="tab" id="protect-tab-lock" data-tab="lock" aria-controls="panel-lock" aria-selected="true" tabindex="0">Lock</button>
+          <button type="button" class="tab" role="tab" id="protect-tab-unlock" data-tab="unlock" aria-controls="panel-unlock" aria-selected="false" tabindex="-1">Unlock</button>
+        </div>
+
+        <section class="wb__panel wb__sub" role="tabpanel" id="panel-lock" aria-labelledby="protect-tab-lock" hidden>
+        <h2 class="wb__title">Lock</h2>
+        <p class="wb__help">Add a password so the copy opens only with it.</p>
+
+        <label class="dropzone" id="lock-zone">
+          <input type="file" class="dropzone__input" id="lock-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="lock-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="lock-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="lock-options" hidden>
+          <div class="field">
+            <label class="field__label" for="lock-password">Password</label>
+            <div class="field__row">
+              <input type="password" class="field__input field__input--eye" id="lock-password" autocomplete="new-password" spellcheck="false">
+              <button type="button" class="iconbtn field__eye" id="lock-eye" aria-label="Show password" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="lock-confirm">Repeat password</label>
+            <div class="field__row">
+              <input type="password" class="field__input field__input--eye" id="lock-confirm" autocomplete="new-password" spellcheck="false">
+              <button type="button" class="iconbtn field__eye" id="lock-eye2" aria-label="Show password" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+              </button>
+            </div>
+            <p class="field__hint" id="lock-hint" aria-live="polite">Type the same password twice to lock the copy.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="lock-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="lock-go" data-label="Add password" disabled>Add password</button>
+          <a class="btn btn--primary" id="lock-download" hidden download="locked.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="lock-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="lock-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="lock-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+        <section class="wb__panel wb__sub" role="tabpanel" id="panel-unlock" aria-labelledby="protect-tab-unlock" hidden>
+        <h2 class="wb__title">Unlock</h2>
+        <p class="wb__help">Make a copy that opens without a password.</p>
+
+        <label class="dropzone" id="unlock-zone">
+          <input type="file" class="dropzone__input" id="unlock-input" accept="application/pdf,.pdf">
+          <span class="dropzone__text">Drop a PDF here, or <span class="dropzone__link">choose a file</span></span>
+        </label>
+
+        <div class="filerow" id="unlock-filerow" hidden>
+          <p class="filerow__name"></p>
+          <p class="filerow__meta"></p>
+          <button type="button" class="iconbtn filerow__remove" aria-label="Remove">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+
+        <div class="strip" id="unlock-strip">
+          <p class="strip__empty">Add a PDF to see its pages here.</p>
+          <div class="strip__line"></div>
+        </div>
+
+        <div class="options" id="unlock-options" hidden>
+          <div class="field">
+            <label class="field__label" for="unlock-password">Password</label>
+            <div class="field__row">
+              <input type="password" class="field__input field__input--eye" id="unlock-password" autocomplete="off" spellcheck="false">
+              <button type="button" class="iconbtn field__eye" id="unlock-eye" aria-label="Show password" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+              </button>
+            </div>
+            <p class="field__hint" id="unlock-hint" aria-live="polite" hidden>This PDF is locked. Enter its password to continue.</p>
+          </div>
+        </div>
+
+        <p class="notice" id="unlock-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="unlock-go" data-label="Remove password" disabled>Remove password</button>
+          <a class="btn btn--primary" id="unlock-download" hidden download="unlocked.pdf">Download</a>
+          <button type="button" class="btn btn--secondary" id="unlock-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="unlock-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="unlock-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+        </section>
+      </section>
+
+      <section class="wb__panel" id="panel-to-pdf" hidden>
+        <h1 class="wb__title">Convert to PDF</h1>
+        <p class="wb__help">Turn Word, Excel, PowerPoint or image files into PDFs.</p>
+
+        <label class="dropzone" id="to-pdf-zone">
+          <input type="file" class="dropzone__input" id="to-pdf-input" accept=".doc,.docx,.rtf,.txt,.html,.htm,.odt,.xls,.xlsx,.xlsm,.csv,.ods,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.bmp,.webp,.md" multiple>
+          <span class="dropzone__text">Drop files here, or <span class="dropzone__link">choose files</span></span>
+        </label>
+        <p class="converters" id="to-pdf-converters" hidden></p>
+
+        <div class="strip" id="to-pdf-strip">
+          <p class="strip__empty">Add files to see them here.</p>
+          <div class="strip__line">
+            <span class="strip__caret" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="filerowlist" id="to-pdf-rows" hidden></div>
+
+        <p class="notice" id="to-pdf-notice" role="alert" hidden aria-live="polite"></p>
+
+        <div class="actionbar">
+          <button type="button" class="btn btn--primary" id="to-pdf-go" data-label="Convert to PDF" disabled>Convert to PDF</button>
+          <a class="btn btn--primary" id="to-pdf-download" hidden download="converted.pdf">Download PDF</a>
+          <button type="button" class="btn btn--secondary" id="to-pdf-reset" hidden>Start over</button>
+          <p class="actionbar__status" id="to-pdf-status" aria-live="polite"></p>
+        </div>
+        <div class="progress" id="to-pdf-progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="progress__bar"></span></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/vendor/pdf.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
